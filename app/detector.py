@@ -54,7 +54,8 @@ class IntrusionDetector:
         source_ip,
         destination_ip,
         severity,
-        description
+        description,
+        evidence=None
     ):
 
         current_time = time.monotonic()
@@ -82,7 +83,8 @@ class IntrusionDetector:
             "destination_ip": destination_ip,
             "alert_type": rule,
             "severity": severity,
-            "description": description
+            "description": description,
+            "evidence": evidence or {}
         }
 
         print("\n========== IDS ALERT ==========")
@@ -146,7 +148,15 @@ class IntrusionDetector:
                 description=(
                     f"{len(distinct_ports)} distinct destination "
                     f"ports attempted within {PORT_SCAN_WINDOW} seconds"
-                )
+                ),
+                evidence={
+                    "protocol": "TCP",
+                    "destination_ports": sorted(distinct_ports),
+                    "distinct_port_count": len(distinct_ports),
+                    "threshold": PORT_SCAN_THRESHOLD,
+                    "window_seconds": PORT_SCAN_WINDOW,
+                    "tcp_flags": packet_data.get("tcp_flags")
+                }
             )
 
         return None
@@ -192,7 +202,15 @@ class IntrusionDetector:
                 description=(
                     f"{len(attempts)} TCP SYN packets detected "
                     f"within {SYN_WINDOW} seconds"
-                )
+                ),
+                evidence={
+                    "protocol": "TCP",
+                    "destination_port": packet_data.get("dst_port"),
+                    "syn_attempt_count": len(attempts),
+                    "threshold": SYN_THRESHOLD,
+                    "window_seconds": SYN_WINDOW,
+                    "tcp_flags": packet_data.get("tcp_flags")
+                }
             )
 
         return None
@@ -234,7 +252,14 @@ class IntrusionDetector:
                 description=(
                     f"Incoming connection attempt to unexpected "
                     f"TCP port {destination_port}"
-                )
+                ),
+                evidence={
+                    "protocol": "TCP",
+                    "destination_port": destination_port,
+                    "expected_ports": sorted(EXPECTED_TCP_PORTS),
+                    "tcp_flags": flags,
+                    "rule": "UNUSUAL_SERVICE"
+                }
             )
 
         return None

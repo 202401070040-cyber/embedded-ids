@@ -1,176 +1,181 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embedded Linux Network IDS</title>
-
-    <link rel="stylesheet" href="/static/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070e1b">
+<title>SOC Sentinel | Network Security Operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="#overview">
+      <span class="brand-mark">✧</span>
+      <span><b>SOC Sentinel</b><small>Real-time Security Operations</small></span>
+    </a>
+    <div class="side-scroll">
+      <div class="nav-group">
+        <a class="nav-item active" href="#overview"><span>▦</span> Overview</a>
+        <a class="nav-item" href="#traffic"><span>◉</span> Real-time Monitor</a>
+        <a class="nav-item" href="#search"><span>⌕</span> SIEM Search</a>
+        <a class="nav-item" href="#alerts"><span>♧</span> Alerts <em id="navNewCount">0</em></a>
+        <a class="nav-item" href="#incidents"><span>⬡</span> Incidents</a>
+        <a class="nav-item" href="#endpoints"><span>▣</span> Endpoint Security</a>
+        <a class="nav-item" href="#traffic"><span>◎</span> Network Watch</a>
+        <a class="nav-item" href="#intel"><span>◈</span> Threat Intelligence</a>
+        <a class="nav-item" href="#status"><span>◇</span> Vulnerability Mgmt</a>
+        <a class="nav-item" href="#incidents"><span>▤</span> Case Management</a>
+        <a class="nav-item" href="#reports"><span>▧</span> Reports</a>
+        <a class="nav-item" href="#playbooks"><span>⚒</span> Playbooks</a>
+        <a class="nav-item" href="#settings"><span>⚙</span> Settings</a>
+      </div>
+      <div class="source-card">
+        <div class="source-title">DATA SOURCES</div>
+        <div class="source-row"><span>Packet Capture</span><b id="captureStatus"><i></i> Checking</b></div>
+        <div class="source-row"><span>Detection Engine</span><b id="engineStatus"><i></i> Ready</b></div>
+        <div class="source-row"><span>SQLite Database</span><b id="databaseStatus"><i></i> Connected</b></div>
+        <div class="source-row"><span>FastAPI Backend</span><b id="apiStatus"><i></i> Checking</b></div>
+        <a href="#status" class="source-link">View all sources →</a>
+      </div>
+    </div>
+    <div class="side-foot">PASSIVE NETWORK IDS <span>•</span> LOCAL SENSOR</div>
+  </aside>
 
-    <!-- Header -->
-    <header class="header">
-        <div>
-            <h1>Embedded Linux Network IDS</h1>
-            <p>Network Security Monitoring and Intrusion Detection System</p>
+  <main class="main">
+    <header class="topbar">
+      <nav class="top-links">
+        <a class="selected" href="#overview">▦ <span>Dashboard</span></a>
+        <a href="#alerts">♧ <span>Alerts</span></a>
+        <a href="#incidents">⬡ <span>Incidents</span></a>
+        <a href="#intel">◈ <span>Threat Intel</span></a>
+        <a href="#reports">▤ <span>Reports</span></a>
+        <a href="#incidents">▧ <span>Cases</span></a>
+        <a href="#playbooks">⚒ <span>Playbooks</span></a>
+      </nav>
+      <div class="top-actions">
+        <div class="clock-widget">
+          <span class="clock-label">LIVE SYSTEM TIME · IST</span>
+          <strong id="liveClock">--:--:--</strong>
+          <small id="liveDate">Loading date...</small>
         </div>
-
-        <div class="system-status">
-            <span class="status-indicator"></span>
-            <span id="systemStatus">Connecting...</span>
-        </div>
+        <button class="icon-button notification-button" id="notifyButton" title="Enable browser notifications">♧<em id="notificationCount">0</em></button>
+        <button class="icon-button" id="refreshButton" title="Refresh dashboard">⚙</button>
+        <div class="analyst"><span class="avatar">A</span><span><b>Analyst</b><small>Local Administrator</small></span></div>
+      </div>
     </header>
 
-    <!-- Main Dashboard -->
-    <main class="container">
+    <section class="page-heading" id="overview">
+      <div><div class="eyebrow">SECURITY OPERATIONS / OVERVIEW</div><h1>Security dashboard</h1><p>Live visibility into network activity, detections and investigation status.</p></div>
+      <div class="live-chip"><i></i><span id="connectionText">CONNECTING TO SENSOR</span><small id="lastUpdated">—</small></div>
+    </section>
 
-        <!-- Summary Cards -->
-        <section class="summary-grid">
+    <section class="kpi-grid">
+      <article class="kpi"><div class="kpi-top"><span>Total Alerts</span><b class="kpi-icon red">⚠</b></div><strong id="totalAlerts">—</strong><small><i class="trend red-text">●</i> <span id="newAlertsMetric">—</span> new / unacknowledged</small><div class="spark red-spark"></div></article>
+      <article class="kpi"><div class="kpi-top"><span>Critical / High Alerts</span><b class="kpi-icon orange">⬡</b></div><strong id="criticalAlerts">—</strong><small><i class="trend green-text">↑</i> Open high-priority detections</small><div class="spark orange-spark"></div></article>
+      <article class="kpi"><div class="kpi-top"><span>Open Incidents</span><b class="kpi-icon purple">◉</b></div><strong id="openIncidents">—</strong><small>Not yet resolved</small><div class="spark purple-spark"></div></article>
+      <article class="kpi"><div class="kpi-top"><span>Observed Endpoints</span><b class="kpi-icon blue">▣</b></div><strong id="totalDevices">—</strong><small>Distinct observed IP addresses</small><div class="spark blue-spark"></div></article>
+      <article class="kpi"><div class="kpi-top"><span>Threats Blocked</span><b class="kpi-icon green">✓</b></div><strong id="threatsBlocked">0</strong><small>Passive IDS · no automatic blocking</small><div class="spark green-spark"></div></article>
+    </section>
 
-            <div class="card">
-                <h3>Total Packets</h3>
-                <p id="totalPackets">0</p>
-            </div>
+    <!-- Live packet inspection statistics -->
+    <section class="packet-stats-grid">
+      <article class="packet-stat-card">
+        <div class="packet-stat-label">Packets Received</div>
+        <strong id="packetsReceived">0</strong>
+        <small>Saved by live capture · current session</small>
+      </article>
 
-            <div class="card">
-                <h3>Total Alerts</h3>
-                <p id="totalAlerts">0</p>
-            </div>
+      <article class="packet-stat-card">
+        <div class="packet-stat-label">Packets Examined</div>
+        <strong id="packetsExamined">0</strong>
+        <small>Successfully analyzed by IDS engine</small>
+      </article>
 
-            <div class="card">
-                <h3>Observed IP Endpoints</h3>
-                <p id="totalDevices">0</p>
-            </div>
+      <article class="packet-stat-card">
+        <div class="packet-stat-label">Examination Rate</div>
+        <strong id="examinationRate">0.00%</strong>
+        <small>Examined packets / received packets</small>
+      </article>
+    </section>
 
-            <div class="card">
-                <h3>System Events</h3>
-                <p id="totalEvents">0</p>
-            </div>
+    <section class="overview-grid">
+      <article class="panel activity-map" id="traffic">
+        <div class="panel-heading"><div><h2>Real-time Network Activity</h2><p>Observed source and destination traffic from captured packets</p></div><span class="panel-tag"><i></i> LIVE CAPTURE</span></div>
+        <div class="map-content">
+          <div class="map-visual">
+            <div class="map-grid"></div>
+            <svg class="network-lines" viewBox="0 0 700 330" preserveAspectRatio="none" aria-label="Network activity visualization">
+              <path d="M65 190 C170 30 250 280 360 120 S540 60 650 180" />
+              <path d="M80 90 C220 250 310 30 430 210 S560 280 650 85" />
+              <path d="M150 280 C260 180 420 300 540 120" />
+              <circle cx="65" cy="190" r="5"/><circle cx="360" cy="120" r="5"/><circle cx="650" cy="180" r="5"/><circle cx="80" cy="90" r="4"/><circle cx="430" cy="210" r="4"/><circle cx="650" cy="85" r="4"/>
+            </svg>
+            <div class="map-caption"><b>NETWORK FLOW VISUALIZATION</b><span>Geographic attribution is not configured for this sensor.</span></div>
+          </div>
+          <div class="source-ranking"><h3>Top alert sources</h3><div id="topSources"><div class="empty">Waiting for alert data…</div></div><div class="ranking-note">Ranked by recorded IDS alerts</div></div>
+        </div>
+        <div class="attack-types"><div><h3>Observed Protocol Mix</h3><small>Latest 1,000 packet records</small></div><div class="protocol-chart"><canvas id="trafficChart"></canvas></div></div>
+      </article>
 
-        </section>
+      <div class="right-stack">
+        <article class="panel distribution-panel">
+          <div class="panel-heading"><div><h2>Alert Distribution</h2><p>All recorded IDS alerts</p></div><span class="period">ALL TIME</span></div>
+          <div class="distribution-content"><div class="donut"><canvas id="severityChart"></canvas><div class="donut-label"><b id="severityTotal">0</b><small>Total</small></div></div><div class="legend" id="severityLegend"></div></div>
+        </article>
+        <article class="panel status-panel" id="status">
+          <div class="panel-heading"><div><h2>System Status</h2><p>Local monitoring components</p></div><span class="chevron">›</span></div>
+          <div class="status-list">
+            <div><span>FastAPI backend</span><b id="statusApi"><i></i> Checking</b></div>
+            <div><span>Packet capture process</span><b id="statusCapture"><i></i> Unknown</b></div>
+            <div><span>Detection engine</span><b id="statusEngine"><i></i> Ready</b></div>
+            <div><span>SQLite database</span><b id="statusDb"><i></i> Connected</b></div>
+            <div><span>Threat intelligence</span><b class="muted-status"><i></i> Not configured</b></div>
+          </div>
+        </article>
+      </div>
 
-        <!-- Traffic Chart -->
-        <section class="panel">
-            <h2>Network Traffic Overview</h2>
-            <canvas id="trafficChart"></canvas>
-        </section>
+      <article class="panel recent-alerts" id="alerts">
+        <div class="panel-heading"><div><h2>Recent Alerts</h2><p>New detections from the intrusion detection engine</p></div><a href="#alert-queue">View all alerts →</a></div>
+        <div class="table-scroll"><table><thead><tr><th>TIME</th><th>ALERT NAME</th><th>SEVERITY</th><th>SOURCE</th><th>DESTINATION</th><th>STATUS</th><th></th></tr></thead><tbody id="recentAlerts"><tr><td colspan="7" class="empty">Loading alerts…</td></tr></tbody></table></div>
+      </article>
+      <article class="panel cases-panel" id="incidents">
+        <div class="panel-heading"><div><h2>Recent Cases</h2><p>Alerts requiring analyst attention</p></div><a href="#alert-queue">View all →</a></div>
+        <div id="recentCases"><div class="empty">Loading cases…</div></div>
+      </article>
+    </section>
 
-        <!-- Alerts Section -->
-        <section class="panel">
-            <h2>Recent Security Alerts</h2>
+    <section class="panel alert-queue" id="alert-queue">
+      <div class="panel-heading queue-heading"><div><h2>Alert Management</h2><p>Filter, inspect and manage detected security events.</p></div><div class="queue-count"><b id="queueCount">0</b><small>VISIBLE ALERTS</small></div></div>
+      <div class="filters" id="search">
+        <label class="search-box">⌕ <input id="alertSearch" type="search" placeholder="Search alert, IP address or detection rule…"></label>
+        <select id="statusFilter"><option value="">All statuses</option><option value="NEW">New</option><option value="ACKNOWLEDGED">Acknowledged</option><option value="INVESTIGATING">Investigating</option><option value="RESOLVED">Resolved</option></select>
+        <select id="severityFilter"><option value="">All severities</option><option value="CRITICAL">Critical</option><option value="HIGH">High</option><option value="MEDIUM">Medium</option><option value="LOW">Low</option><option value="INFORMATIONAL">Informational</option></select>
+        <button class="secondary-button" id="clearFilters">Clear filters</button>
+      </div>
+      <div class="table-scroll"><table class="queue-table"><thead><tr><th>DETECTION</th><th>SEVERITY</th><th>SOURCE IP</th><th>DESTINATION IP</th><th>STATUS</th><th>DETECTED</th><th>ACTION</th></tr></thead><tbody id="alertsTable"><tr><td colspan="7" class="empty">Loading alert queue…</td></tr></tbody></table></div>
+      <div class="table-footer"><span id="alertTableFoot">Loading…</span><span>Refresh interval: 3 seconds</span></div>
+    </section>
 
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Alert Type</th>
-                            <th>Severity</th>
-                            <th>Source IP</th>
-                            <th>Destination IP</th>
-                        </tr>
-                    </thead>
+    <section class="lower-grid">
+      <article class="panel endpoint-panel" id="endpoints"><div class="panel-heading"><div><h2>Observed IP Endpoints</h2><p>Addresses seen in captured traffic, not a complete LAN inventory.</p></div></div><div class="table-scroll"><table><thead><tr><th>IP ADDRESS</th><th>MAC ADDRESS</th><th>FIRST SEEN</th><th>LAST SEEN</th></tr></thead><tbody id="devicesTable"><tr><td colspan="4" class="empty">Loading endpoints…</td></tr></tbody></table></div></article>
+      <article class="panel intel-panel" id="intel"><div class="panel-heading"><div><h2>Threat Intelligence Feed</h2><p>Local IDS event stream</p></div><span class="panel-tag">LOCAL EVENTS</span></div><div id="eventFeed"><div class="empty">Loading system events…</div></div></article>
+    </section>
+    <section class="panel traffic-table-panel" id="reports"><div class="panel-heading"><div><h2>Recent Network Traffic</h2><p>Packet metadata captured by Scapy</p></div><a href="#traffic">Network monitor ↑</a></div><div class="table-scroll"><table><thead><tr><th>TIME</th><th>SOURCE</th><th>DESTINATION</th><th>PROTOCOL</th><th>SOURCE PORT</th><th>DEST. PORT</th><th>LENGTH</th></tr></thead><tbody id="trafficTable"><tr><td colspan="7" class="empty">Loading traffic…</td></tr></tbody></table></div></section>
+    <footer><span>SOC SENTINEL · EMBEDDED LINUX NETWORK IDS</span><span>Passive monitoring · Local data · No automatic blocking</span></footer>
+  </main>
+</div>
 
-                    <tbody id="alertsTable">
-                        <tr>
-                            <td colspan="5">Loading alerts...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Network Traffic -->
-        <section class="panel">
-            <h2>Recent Network Traffic</h2>
-
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Source IP</th>
-                            <th>Destination IP</th>
-                            <th>Protocol</th>
-                            <th>Source Port</th>
-                            <th>Destination Port</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="trafficTable">
-                        <tr>
-                            <td colspan="6">Loading traffic...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Observed Endpoints -->
-        <section class="panel">
-            <h2>Observed IP Endpoints</h2>
-            <p class="section-note">
-                These are IP addresses observed in captured traffic.
-                They are not necessarily individual physical LAN devices.
-            </p>
-
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>IP Address</th>
-                            <th>MAC Address</th>
-                            <th>Hostname</th>
-                            <th>Last Seen</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="devicesTable">
-                        <tr>
-                            <td colspan="4">Loading endpoints...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- System Events -->
-        <section class="panel">
-            <h2>Recent System Events</h2>
-
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Event Type</th>
-                            <th>Severity</th>
-                            <th>Message</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="eventsTable">
-                        <tr>
-                            <td colspan="4">Loading events...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer>
-        <p>Embedded Linux Network IDS | Developed using Python, Scapy, FastAPI and SQLite</p>
-    </footer>
-
-    <script src="/static/app.js"></script>
-
-</body>
-</html>
+<div class="modal-backdrop hidden" id="incidentModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-head"><div><div class="eyebrow">SECURITY EVENT INVESTIGATION</div><h2 id="modalTitle">Alert details</h2></div><button class="icon-button" id="closeModal" aria-label="Close">×</button></div>
+    <div id="modalContent"></div><div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+<div class="toast-region" id="toastRegion" aria-live="polite"></div>
+<script src="/static/app.js"></script>
+</body></html>

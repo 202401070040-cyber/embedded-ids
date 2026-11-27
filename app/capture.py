@@ -6,6 +6,8 @@ import signal
 
 from app.database import (
     initialize_database,
+    reset_packet_stats,
+    increment_packets_examined,
     insert_packet,
     insert_alert,
     update_device,
@@ -82,6 +84,7 @@ def process_packet(packet):
 
     # Analyze packet using IDS engine
     alerts = detector.analyze_packet(packet_data)
+    increment_packets_examined()
 
     # Store generated alerts
     for alert in alerts:
@@ -112,6 +115,7 @@ def process_packet(packet):
 if __name__ == "__main__":
 
     initialize_database()
+    reset_packet_stats()
 
     # Record IDS startup
     log_system_event(
